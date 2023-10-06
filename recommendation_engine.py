@@ -32,28 +32,28 @@ def fetch_posts():
     return results
 
 def fetch_interactions(userid):
-    query = 'SELECT postid from core_interaction WHERE userid="'+userid+'";'
+    query = 'SELECT postid from core_interaction WHERE user_id="'+str(userid)+'";'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
     return results
     
 def fetch_userinterests(userid):
-    query = 'SELECT tagid, score from core_userinterests WHERE userid="'+userid+'";'
+    query = 'SELECT tag_id, score from core_userinterests WHERE user_id="'+str(userid)+'";'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
     return results
 
 def fetch_posttags(postid):
-    query = 'SELECT tagid, score from core_post_tags WHERE post_id="'+postid+'";'
+    query = 'SELECT tag_id, score from core_post_tags WHERE post_id="'+str(postid)+'";'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
     return results
 
 def fetch_interactionscores(userid):
-    query = 'SELECT pt.tagid, SUM(pt.score) AS total_score FROM User_Interactions ui JOIN Post_tags pt ON ui.postid = pt.postid WHERE ui.userid ="'+userid+'"GROUP BY pt.tagid;'
+    query = 'SELECT pt.tag_id, SUM(pt.score) AS total_score FROM core_interaction ui JOIN core_post_tags pt ON ui.post_id = pt.post_id WHERE ui.user_id ="'+str(userid)+'"GROUP BY pt.tag_id;'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -82,7 +82,7 @@ def generatescores(interests, interactions):
 def updatescore(scores, userid):
     cursor = con.cursor()
     for tag, score in scores.items():
-        query = 'UPDATE core_userinterests SET score = "'+score+'" WHERE userid = "'+userid+'" AND tagid = "'+tag+'";'
+        query = 'UPDATE core_userinterests SET score = "'+score+'" WHERE user_id = "'+userid+'" AND tag_id = "'+tag+'";'
         cursor.execute(query)
     con.commit()
 
