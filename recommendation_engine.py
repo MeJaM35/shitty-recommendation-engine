@@ -46,14 +46,14 @@ def fetch_userinterests(userid):
     return results
 
 def fetch_posttags(postid):
-    query = 'SELECT tag_id, score from core_post_tags WHERE post_id="'+str(postid)+'";'
+    query = 'SELECT tag_id, score from core_post_tag WHERE post_id="'+str(postid)+'";'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
     return results
 
 def fetch_interactionscores(userid):
-    query = 'SELECT pt.tag_id, SUM(pt.score) AS total_score FROM core_interaction ui JOIN core_post_tags pt ON ui.post_id = pt.post_id WHERE ui.user_id ="'+str(userid)+'"GROUP BY pt.tag_id;'
+    query = 'SELECT pt.tag_id, SUM(pt.score) AS total_score FROM core_interaction ui JOIN core_post_tag pt ON ui.post_id = pt.post_id WHERE ui.user_id ="'+str(userid)+'"GROUP BY pt.tag_id;'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -82,7 +82,7 @@ def generatescores(interests, interactions):
 def updatescore(scores, userid):
     cursor = con.cursor()
     for tag, score in scores.items():
-        query = 'UPDATE core_userinterests SET score = "'+score+'" WHERE user_id = "'+userid+'" AND tag_id = "'+tag+'";'
+        query = 'UPDATE core_userinterests SET score = "'+str(score)+'" WHERE user_id = "'+str(userid)+'" AND tag_id = "'+str(tag)+'";'
         cursor.execute(query)
     con.commit()
 
@@ -90,8 +90,8 @@ def cosine_similarity(dict1, dict2):
     # Extract unique keys from both dictionaries
     all_keys = set(dict1.keys()).union(dict2.keys())
     # Create vectors for each dictionary based on the keys
-    vector1 = [dict1.get(key, 0) for key in all_keys]
-    vector2 = [dict2.get(key, 0) for key in all_keys]
+    vector1 = [float(dict1.get(key, 0)) for key in all_keys]
+    vector2 = [float(dict2.get(key, 0)) for key in all_keys]
     # Calculate the cosine similarity using the modified vectors
     dot_product = np.dot(vector1, vector2)
     magnitude1 = np.linalg.norm(vector1)
@@ -99,8 +99,9 @@ def cosine_similarity(dict1, dict2):
     similarity = dot_product / (magnitude1 * magnitude2)
     return similarity
 
-def recommend(userid, postid):
-    query = 'INSERT into core_recommendations (post_id, user_id) values ('+postid+','+userid+')'
+def recommend(userid, postid, similarity):
+    print("Generated Recommendation")
+    query = 'INSERT into core_recommendations (post_id, user_id, score, visited) values ('+str(postid)+','+str(userid)+','+str(similarity)+',"False")'
     cursor = con.cursor()
     cursor.execute(query)
     con.commit()
@@ -108,7 +109,7 @@ def recommend(userid, postid):
 #def cacheinteractions()
 #def insertempty(userid)
 
-con = connect_db('F:\Shitty Recommendation Egnine\db.sqlite3')
+con = connect_db('C:/Users/varad/Desktop/django-freelance/giggity/db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
 # Iterate over users
