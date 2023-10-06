@@ -92,7 +92,10 @@ def cosine_similarity(dict1, dict2):
     return similarity
 
 def recommend(userid, postid):
-
+    query = 'INSERT into core_recommendations (post_id, user_id) values ('+postid+','+userid+')'
+    cursor = con.cursor()
+    cursor.execute(query)
+    con.commit()
 
 #def cacheinteractions()
 #def insertempty(userid)
