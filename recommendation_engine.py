@@ -1,11 +1,12 @@
 import sqlite3
+import sys
 import numpy as np
 
 con = None
 
 def connect_db(db_name):
     # Tries to connect 50 times after that stops script execution
-    for x in range(50)
+    for x in range(50):
         try:
             connection = sqlite3.connect(db_name)
             # Connection success! Break out of for loop as well as function and return connection to main
@@ -17,14 +18,14 @@ def connect_db(db_name):
     sys.exit(1)
 
 def fetch_users():
-    query = 'SELECT post_id from core_post'
+    query = 'SELECT id from core_userprofile'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
     return results
 
 def fetch_posts():
-    query = 'SELECT id from core_userprofile'
+    query = 'SELECT post_id from core_post'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -39,6 +40,13 @@ def fetch_interactions(userid):
     
 def fetch_userinterests(userid):
     query = 'SELECT tagid, score from core_userinterests WHERE userid="'+userid+'";'
+    cursor = con.cursor()
+    cursor.execute(query)
+    results = cursor.fetchall()
+    return results
+
+def fetch_posttags(postid):
+    query = 'SELECT tagid, score from core_post_tags WHERE post_id="'+postid+'";'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -100,7 +108,7 @@ def recommend(userid, postid):
 #def cacheinteractions()
 #def insertempty(userid)
 
-con = connect_db('C:/Users/varad/Desktop/django-freelance/giggity/db.sqlite3')
+con = connect_db('F:\Shitty Recommendation Egnine\db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
 # Iterate over users
