@@ -2,6 +2,7 @@ import sqlite3
 import numpy as np
 
 con = None
+
 def connect_db(db_name):
     # Tries to connect 50 times after that stops script execution
     for x in range(50)
@@ -16,7 +17,7 @@ def connect_db(db_name):
     sys.exit(1)
 
 def fetch_users():
-    query = 'SELECT post_id from core_post"
+    query = 'SELECT post_id from core_post'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -44,7 +45,7 @@ def fetch_userinterests(userid):
     return results
 
 def fetch_interactionscores(userid):
-    query = 'SELECT pt.tagid, SUM(pt.score) AS total_score FROM User_Interactions ui JOIN Post_tags pt ON ui.postid = pt.postid WHERE ui.userid ="'+userid'"GROUP BY pt.tagid;'
+    query = 'SELECT pt.tagid, SUM(pt.score) AS total_score FROM User_Interactions ui JOIN Post_tags pt ON ui.postid = pt.postid WHERE ui.userid ="'+userid+'"GROUP BY pt.tagid;'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -130,11 +131,11 @@ for r in posts:
     # Iterate over users
     for row in users:
         user = row[0]
-            user_interests = {}
-            for row in fetch_userinterests(user):
-                tag = row[0]
-                score = row[1]
-                user_interests[tag] = score 
-            similarity = cosine_similarity(user_interests, post_tags)
-            if similarity > 0.5:
-                recommend(user, post, similarity)
+        user_interests = {}
+        for row in fetch_userinterests(user):
+            tag = row[0]
+            score = row[1]
+            user_interests[tag] = score 
+        similarity = cosine_similarity(user_interests, post_tags)
+        if similarity > 0.5:
+            recommend(user, post, similarity)
