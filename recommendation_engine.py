@@ -13,7 +13,7 @@ def connect_db(db_name):
             return connection
         except sqlite3.Error as e:
             # Display error and attempt number in console
-            print(" Failed to connect, retrying times:"+x+" Error:"+e)
+            print("error"+e)
     # Could not connect 50 times so stop execution of the script
     sys.exit(1)
 
@@ -106,10 +106,13 @@ def recommend(userid, postid, similarity):
     cursor.execute(query)
     con.commit()
 
-#def cacheinteractions()
-#def insertempty(userid)
+def cacheinteractions():
+    query = 'DELETE FROM core_interaction'
+    cursor = con.cursor()
+    cursor.execute(query)
+    con.commit()
 
-con = connect_db('C:/Users/varad/Desktop/django-freelance/giggity/db.sqlite3')
+con = connect_db('db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
 # Iterate over users
@@ -151,3 +154,4 @@ for r in posts:
         similarity = cosine_similarity(user_interests, post_tags)
         if similarity > 0.5:
             recommend(user, post, similarity)
+cacheinteractions()
