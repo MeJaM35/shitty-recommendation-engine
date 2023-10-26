@@ -167,3 +167,4 @@ for r in posts:
         if similarity > 0.5:
             recommend(user, post, similarity)
 cacheinteractions()
+conn.close()
