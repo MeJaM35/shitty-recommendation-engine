@@ -91,7 +91,10 @@ def cosine_similarity(dict1, dict2):
     dot_product = np.dot(vector1, vector2)
     magnitude1 = np.linalg.norm(vector1)
     magnitude2 = np.linalg.norm(vector2)
+    if dot_product==0:
+        return 0
     similarity = dot_product / (magnitude1 * magnitude2)
+    print(str(similarity))
     return similarity
 
 def recommend(userid, postid, similarity):
@@ -164,54 +167,59 @@ def generate_latest_top():
     cursor = con.cursor()
     cursor.execute("""
         SELECT post_id, COUNT(post_id) as post_count
-        FROM Interaction
+        FROM core_interaction
         GROUP BY post_id
         ORDER BY post_count DESC
         LIMIT 5
     """)
     latest_posts = cursor.fetchall()
     for post_id, _ in latest_posts:
-        save_top(cursor, post_id, 'Latest')
-    save_top(type, post_id)
+        save_top(post_id, 'Latest')
 
 def generate_top():
     cursor = con.cursor()
     cursor.execute("""
         SELECT post_id, COUNT(post_id) as post_count
-        FROM Logs
+        FROM core_logs
         GROUP BY post_id
         ORDER BY post_count DESC
         LIMIT 5
     """)
     top_posts = cursor.fetchall()
     for post_id, _ in top_posts:
-        save_top(cursor, post_id, 'Top')
-    save_top(type, post_id)
+        save_top(post_id, 'Top')
 
 def generate_grossing():
     cursor = con.cursor()
     cursor.execute("""
         SELECT post_id, COUNT(post_id) as post_count
-        FROM Recommendations
+        FROM core_recommendations
         GROUP BY post_id
         ORDER BY post_count DESC
         LIMIT 5
     """)
     grossing_posts = cursor.fetchall()
     for post_id, _ in grossing_posts:
-        save_top(cursor, post_id, 'Grossing')
-    save_top(type, post_id)
+        save_top(post_id, 'Grossing')
 
-def save_top(type, post_id):
+def save_top(post_id, type):
+    print("generated top chart"+" PostID:"+str(post_id)+" Type:"+str(type))
     query = 'INSERT into core_topcharts (type, post_id) values (?, ?);'
     cursor = con.cursor()
     cursor.execute(query, (post_id, type))
+    con.commit()
+
+def cachetop():
+    query = 'DELETE FROM core_topcharts;'
+    cursor = con.cursor()
+    cursor.execute(query)
     con.commit()
 
 #Main execution
 con = connect_db('db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
+cachetop()
 generate_latest_top()
 generate_top()
 generate_recommendations(users, posts)
