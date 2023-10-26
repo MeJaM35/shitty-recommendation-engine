@@ -121,28 +121,28 @@ def cacherecommendations(userid, postid):
 
 def generate_recommendations(users, posts):
     for r in users:
-    user = r[0]
-    # Fetching user interests
-    user_interests_data = fetch_userinterests(user_id)
-    if user_interests_data:
-        user_interests = {}
-        for row in user_interests_data:
-            tag = row[0]
-            score = row[1]
-            user_interests[tag] = score
-        # Start collecting user interactions
-        user_interactions_data = fetch_interactionscores(user_id)
-        if user_interactions_data:
-            user_interactions = {}
-            print("No interactions detected for user")
-            for row in user_interactions_data:
+        user = r[0]
+        # Fetching user interests
+        user_interests_data = fetch_userinterests(user)
+        if user_interests_data:
+            user_interests = {}
+            for row in user_interests_data:
                 tag = row[0]
                 score = row[1]
-                user_interactions[tag] = score
-            # Normalise interaction scores to 10
-            user_interactions = normalise(user_interactions)
-            user_scores = generatescores(user_interests, user_interactions)
-            updatescore(user_scores, user)
+                user_interests[tag] = score
+            # Start collecting user interactions
+            user_interactions_data = fetch_interactionscores(user)
+            if user_interactions_data:
+                user_interactions = {}
+                print("No interactions detected for user")
+                for row in user_interactions_data:
+                    tag = row[0]
+                    score = row[1]
+                    user_interactions[tag] = score
+                # Normalise interaction scores to 10
+                user_interactions = normalise(user_interactions)
+                user_scores = generatescores(user_interests, user_interactions)
+                updatescore(user_scores, user)
     # Iterate over posts
     for r in posts:
         post = r[0]
@@ -165,8 +165,17 @@ def generate_recommendations(users, posts):
                 recommend(user, post, similarity)
     cacheinteractions()
 
+#def generate_latest_top()
+#def generate_top()
+#def generate_grossing()
+
+
+#Main execution
 con = connect_db('db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
+#generate_latest_top()
+#generate_top()
 generate_recommendations(users, posts)
-conn.close()
+#generate_grossing()
+con.close()
