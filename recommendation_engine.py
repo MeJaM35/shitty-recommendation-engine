@@ -165,17 +165,38 @@ def generate_recommendations(users, posts):
                 recommend(user, post, similarity)
     cacheinteractions()
 
-#def generate_latest_top()
-#def generate_top()
-#def generate_grossing()
+def generate_latest_top():
+    fetch_db("core_interaction")
+    #top charts logic
+    save_top(type, post_id)
+def generate_top():
+    fetch_db("core_logs")
+    #top charts logic
+    save_top(type, post_id)
+def generate_grossing():
+    fetch_db("core_recommendations")
+    #top charts logic
+    save_top(type, post_id)
 
+def save_top(type, post_id):
+    query = 'INSERT into core_topcharts (type, post_id) values ('+str(type)+''+str(postid)+');'
+    cursor = con.cursor()
+    cursor.execute(query)
+    con.commit()
+
+def fetch_db(dbtable):
+    query = 'SELECT * from '+str(dbtable)+';'
+    cursor = con.cursor()
+    cursor.execute(query)
+    results = cursor.fetchall()
+    return results
 
 #Main execution
 con = connect_db('db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
-#generate_latest_top()
-#generate_top()
+generate_latest_top()
+generate_top()
 generate_recommendations(users, posts)
-#generate_grossing()
+generate_grossing()
 con.close()
