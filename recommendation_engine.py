@@ -119,11 +119,8 @@ def cacherecommendations(userid, postid):
     cursor.execute(query)
     con.commit()
 
-con = connect_db('db.sqlite3')
-users = fetch_users()
-posts = fetch_posts()
-# Iterate over users
-for r in users:
+def generate_recommendations(users, posts):
+    for r in users:
     user = r[0]
     # Fetching user interests
     user_interests_data = fetch_userinterests(user_id)
@@ -146,25 +143,30 @@ for r in users:
             user_interactions = normalise(user_interactions)
             user_scores = generatescores(user_interests, user_interactions)
             updatescore(user_scores, user)
-# Iterate over posts
-for r in posts:
-    post = r[0]
-    # Fetch post tags
-    post_tags = {}
-    for row in fetch_posttags(post):
-        tag = row[0]
-        score = row[1]
-        post_tags[tag] = score
-    # Iterate over users
-    for row in users:
-        user = row[0]
-        user_interests = {}
-        for row in fetch_userinterests(user):
+    # Iterate over posts
+    for r in posts:
+        post = r[0]
+        # Fetch post tags
+        post_tags = {}
+        for row in fetch_posttags(post):
             tag = row[0]
             score = row[1]
-            user_interests[tag] = score 
-        similarity = cosine_similarity(user_interests, post_tags)
-        if similarity > 0.5:
-            recommend(user, post, similarity)
-cacheinteractions()
+            post_tags[tag] = score
+        # Iterate over users
+        for row in users:
+            user = row[0]
+            user_interests = {}
+            for row in fetch_userinterests(user):
+                tag = row[0]
+                score = row[1]
+                user_interests[tag] = score 
+            similarity = cosine_similarity(user_interests, post_tags)
+            if similarity > 0.5:
+                recommend(user, post, similarity)
+    cacheinteractions()
+
+con = connect_db('db.sqlite3')
+users = fetch_users()
+posts = fetch_posts()
+generate_recommendations(users, posts)
 conn.close()
