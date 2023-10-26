@@ -5,27 +5,22 @@ import numpy as np
 con = None
 
 def connect_db(db_name):
-    # Tries to connect 50 times after that stops script execution
-    for x in range(50):
-        try:
-            connection = sqlite3.connect(db_name)
-            # Connection success! Break out of for loop as well as function and return connection to main
-            return connection
-        except sqlite3.Error as e:
-            # Display error and attempt number in console
-            print("error"+e)
-    # Could not connect 50 times so stop execution of the script
+    try:
+        connection = sqlite3.connect(db_name)
+        return connection
+    except sqlite3.Error as e:
+        print("error"+str(e))
     sys.exit(1)
 
 def fetch_users():
-    query = 'SELECT id from core_userprofile'
+    query = 'SELECT id from core_userprofile;'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
     return results
 
 def fetch_posts():
-    query = 'SELECT post_id from core_post'
+    query = 'SELECT post_id from core_post;'
     cursor = con.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -102,13 +97,13 @@ def cosine_similarity(dict1, dict2):
 def recommend(userid, postid, similarity):
     cacherecommendations(userid, postid)
     print("Generated Recommendation")
-    query = 'INSERT into core_recommendations (post_id, user_id, score, visited) values ('+str(postid)+','+str(userid)+','+str(similarity)+',"False")'
+    query = 'INSERT into core_recommendations (post_id, user_id, score, visited) values ('+str(postid)+','+str(userid)+','+str(similarity)+',"False");'
     cursor = con.cursor()
     cursor.execute(query)
     con.commit()
 
 def cacheinteractions():
-    query = 'DELETE FROM core_interaction'
+    query = 'DELETE FROM core_interaction;'
     cursor = con.cursor()
     cursor.execute(query)
     con.commit()
@@ -166,30 +161,52 @@ def generate_recommendations(users, posts):
     cacheinteractions()
 
 def generate_latest_top():
-    fetch_db("core_interaction")
-    #top charts logic
+    cursor = con.cursor()
+    cursor.execute("""
+        SELECT post_id, COUNT(post_id) as post_count
+        FROM Interaction
+        GROUP BY post_id
+        ORDER BY post_count DESC
+        LIMIT 5
+    """)
+    latest_posts = cursor.fetchall()
+    for post_id, _ in latest_posts:
+        save_top(cursor, post_id, 'Latest')
     save_top(type, post_id)
+
 def generate_top():
-    fetch_db("core_logs")
-    #top charts logic
+    cursor = con.cursor()
+    cursor.execute("""
+        SELECT post_id, COUNT(post_id) as post_count
+        FROM Logs
+        GROUP BY post_id
+        ORDER BY post_count DESC
+        LIMIT 5
+    """)
+    top_posts = cursor.fetchall()
+    for post_id, _ in top_posts:
+        save_top(cursor, post_id, 'Top')
     save_top(type, post_id)
+
 def generate_grossing():
-    fetch_db("core_recommendations")
-    #top charts logic
+    cursor = con.cursor()
+    cursor.execute("""
+        SELECT post_id, COUNT(post_id) as post_count
+        FROM Recommendations
+        GROUP BY post_id
+        ORDER BY post_count DESC
+        LIMIT 5
+    """)
+    grossing_posts = cursor.fetchall()
+    for post_id, _ in grossing_posts:
+        save_top(cursor, post_id, 'Grossing')
     save_top(type, post_id)
 
 def save_top(type, post_id):
-    query = 'INSERT into core_topcharts (type, post_id) values ('+str(type)+''+str(postid)+');'
+    query = 'INSERT into core_topcharts (type, post_id) values (?, ?);'
     cursor = con.cursor()
-    cursor.execute(query)
+    cursor.execute(query, (post_id, type))
     con.commit()
-
-def fetch_db(dbtable):
-    query = 'SELECT * from '+str(dbtable)+';'
-    cursor = con.cursor()
-    cursor.execute(query)
-    results = cursor.fetchall()
-    return results
 
 #Main execution
 con = connect_db('db.sqlite3')
