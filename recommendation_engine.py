@@ -100,6 +100,7 @@ def cosine_similarity(dict1, dict2):
     return similarity
 
 def recommend(userid, postid, similarity):
+    cacherecommendations(userid, postid)
     print("Generated Recommendation")
     query = 'INSERT into core_recommendations (post_id, user_id, score, visited) values ('+str(postid)+','+str(userid)+','+str(similarity)+',"False")'
     cursor = con.cursor()
@@ -112,6 +113,12 @@ def cacheinteractions():
     cursor.execute(query)
     con.commit()
 
+def cacherecommendations(userid, postid):
+    query = 'DELETE FROM core_recommendations WHERE post_id='+str(postid)+' AND user_id='+str(userid)+';'
+    cursor = con.cursor()
+    cursor.execute(query)
+    con.commit()
+
 con = connect_db('db.sqlite3')
 users = fetch_users()
 posts = fetch_posts()
@@ -119,21 +126,26 @@ posts = fetch_posts()
 for r in users:
     user = r[0]
     # Fetching user interests
-    user_interests = {}
-    for row in fetch_userinterests(user):
-        tag = row[0]
-        score = row[1]
-        user_interests[tag] = score
-    # Start collecting user interactions
-    user_interactions = {}
-    for row in fetch_interactionscores(user):
-        tag = row[0]
-        score = row[1]
-        user_interactions[tag] = score
-    # Normalise interaction scores to 10
-    user_interactions = normalise(user_interactions)
-    user_scores = generatescores(user_interests, user_interactions)
-    updatescore(user_scores, user)
+    user_interests_data = fetch_userinterests(user_id)
+    if user_interests_data:
+        user_interests = {}
+        for row in user_interests_data:
+            tag = row[0]
+            score = row[1]
+            user_interests[tag] = score
+        # Start collecting user interactions
+        user_interactions_data = fetch_interactionscores(user_id)
+        if user_interactions_data:
+            user_interactions = {}
+            print("No interactions detected for user")
+            for row in user_interactions_data:
+                tag = row[0]
+                score = row[1]
+                user_interactions[tag] = score
+            # Normalise interaction scores to 10
+            user_interactions = normalise(user_interactions)
+            user_scores = generatescores(user_interests, user_interactions)
+            updatescore(user_scores, user)
 # Iterate over posts
 for r in posts:
     post = r[0]
