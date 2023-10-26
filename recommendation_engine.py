@@ -206,7 +206,7 @@ def save_top(post_id, type):
     print("generated top chart"+" PostID:"+str(post_id)+" Type:"+str(type))
     query = 'INSERT into core_topcharts (type, post_id) values (?, ?);'
     cursor = con.cursor()
-    cursor.execute(query, (post_id, type))
+    cursor.execute(query, (type, post_id))
     con.commit()
 
 def cachetop():
